@@ -24,9 +24,7 @@ const months = [
 const knoInput = document.getElementById("kno");
 const monthSelect = document.getElementById("month");
 const yearSelect = document.getElementById("year");
-const responseJsonInput = document.getElementById("response-json");
-const detailsButton = document.getElementById("details-btn");
-const downloadButton = document.getElementById("download-btn");
+const fetchButton = document.getElementById("fetch-btn");
 const statusElement = document.getElementById("status");
 
 function setStatus(text, tone) {
@@ -102,20 +100,7 @@ async function buildBillUrl(account) {
   return `${downloadBaseUrl}?${query.toString()}`;
 }
 
-function openDetailsPage() {
-  const kno = knoInput.value.trim();
-  if (!kno) {
-    setStatus("Invalid", "error");
-    return;
-  }
-
-  const url = detailsApiBase + encodeURIComponent(kno);
-  window.open(url, "_blank", "noopener,noreferrer");
-  setStatus("Paste JSON and click Download", "idle");
-}
-
-function parseAccountFromTextarea() {
-  const payload = JSON.parse(responseJsonInput.value.trim());
+function parseAccount(payload) {
   const account = Array.isArray(payload) ? payload[0] : payload;
   const accno = account?.accno || account?.ACCOUNT_NO;
   const sdocode = account?.sdocode || account?.SDO_CODE;
@@ -133,9 +118,28 @@ function parseAccountFromTextarea() {
   };
 }
 
-async function downloadBill() {
+async function fetchAndDownload() {
+  const kno = knoInput.value.trim();
+  if (!kno) {
+    setStatus("Invalid", "error");
+    return;
+  }
+
+  setStatus("Checking...", "idle");
+
   try {
-    const account = parseAccountFromTextarea();
+    const response = await fetch(detailsApiBase + encodeURIComponent(kno), {
+      headers: {
+        Accept: "application/json, text/plain, */*"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("Invalid");
+    }
+
+    const payload = await response.json();
+    const account = parseAccount(payload);
     const billUrl = await buildBillUrl(account);
     setStatus("Valid", "success");
     window.open(billUrl, "_blank", "noopener,noreferrer");
@@ -145,5 +149,4 @@ async function downloadBill() {
 }
 
 fillDateOptions();
-detailsButton.addEventListener("click", openDetailsPage);
-downloadButton.addEventListener("click", downloadBill);
+fetchButton.addEventListener("click", fetchAndDownload);
