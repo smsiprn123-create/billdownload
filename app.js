@@ -1,8 +1,10 @@
 const secretKey = "1234567890abcdef";
 const ivText = "1234567890123456";
-const detailsApiBase = "https://jdvvnl.bijlimitra.com/jdvvnlmitra/accountdetailsByKno/";
+const detailsApiBase =
+  "https://crmjdvvnl.in/ComplaintRegistration/GetList?OfficeCode=0&ConsumerType=1&Searchparm=";
 const downloadBaseUrl =
   "https://jdvvnl.bijliprabandh.com/jdvvnlprabhand/billPrintByAccountNoFromNcms/download";
+const defaultTariffCode = "4000P";
 
 const months = [
   ["01", "January"],
@@ -115,12 +117,20 @@ function openDetailsPage() {
 function parseAccountFromTextarea() {
   const payload = JSON.parse(responseJsonInput.value.trim());
   const account = Array.isArray(payload) ? payload[0] : payload;
+  const accno = account?.accno || account?.ACCOUNT_NO;
+  const sdocode = account?.sdocode || account?.SDO_CODE;
+  const tariffcode =
+    account?.tariffcode || account?.TARIFF_CODE || account?.tariffCode || defaultTariffCode;
 
-  if (!account || !account.accno || !account.sdocode || !account.tariffcode) {
+  if (!account || !accno || !sdocode) {
     throw new Error("Invalid");
   }
 
-  return account;
+  return {
+    accno,
+    sdocode,
+    tariffcode
+  };
 }
 
 async function downloadBill() {
