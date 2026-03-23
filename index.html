@@ -1,22 +1,126 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Vite and React starter for generating JDVVNL bill download links."
-    />
-    <title>JDVVNL Bill Download</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Instrument+Serif:ital@0;1&display=swap"
-      rel="stylesheet"
-    />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bill Download</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #2b170e, #6e3a1f);
+      }
+
+      .card {
+        width: min(420px, 100%);
+        padding: 24px;
+        border-radius: 20px;
+        background: rgba(20, 11, 7, 0.62);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      label {
+        display: block;
+        margin-bottom: 14px;
+        font-weight: 700;
+      }
+
+      span {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      input,
+      select,
+      button {
+        width: 100%;
+        padding: 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        font: inherit;
+      }
+
+      input,
+      select {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      button {
+        margin-top: 4px;
+        border: 0;
+        font-weight: 700;
+        color: #2a160d;
+        background: #f7b27e;
+        cursor: pointer;
+      }
+
+      #status {
+        margin: 14px 0 0;
+        text-align: center;
+        font-weight: 700;
+      }
+
+      .idle {
+        color: #ffd9be;
+      }
+
+      .success {
+        color: #9df0bc;
+      }
+
+      .error {
+        color: #ffb4a8;
+      }
+
+      @media (max-width: 520px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <main class="card">
+      <label>
+        <span>Kno</span>
+        <input id="kno" type="text" placeholder="Enter Kno" />
+      </label>
+
+      <div class="row">
+        <label>
+          <span>Month</span>
+          <select id="month"></select>
+        </label>
+
+        <label>
+          <span>Year</span>
+          <select id="year"></select>
+        </label>
+      </div>
+
+      <button id="fetch-btn" type="button">Fetch</button>
+      <p id="status" class="idle"></p>
+    </main>
+
+    <script src="./app.js"></script>
   </body>
 </html>
