@@ -83,6 +83,12 @@
         grid-template-columns: 1fr 1fr;
       }
 
+      .topbar {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 12px;
+      }
+
       button {
         margin-top: 4px;
         border: 0;
@@ -90,6 +96,12 @@
         color: #2a160d;
         background: #f7b27e;
         cursor: pointer;
+      }
+
+      .logout-btn {
+        width: auto;
+        min-width: 110px;
+        margin-top: 0;
       }
 
       #status,
@@ -136,6 +148,10 @@
     </main>
 
     <main id="app-card" class="card hidden">
+      <div class="topbar">
+        <button id="logout-btn" class="logout-btn" type="button">Logout</button>
+      </div>
+
       <label>
         <span>Kno</span>
         <input id="kno" type="text" placeholder="Enter Kno" />
