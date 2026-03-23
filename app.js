@@ -6,6 +6,9 @@ const downloadBaseUrl =
   "https://jdvvnl.bijliprabandh.com/jdvvnlprabhand/billPrintByAccountNoFromNcms/download";
 const defaultTariffCode = "4000P";
 const authFile = "./user.txt";
+const sessionKey = "bill-auth";
+const sessionExpiryKey = "bill-auth-expiry";
+const sessionDurationMs = 10 * 60 * 1000;
 
 const months = [
   ["01", "January"],
@@ -28,6 +31,7 @@ const usernameInput = document.getElementById("username");
 const passwordInput = document.getElementById("password");
 const loginButton = document.getElementById("login-btn");
 const loginStatusElement = document.getElementById("login-status");
+const logoutButton = document.getElementById("logout-btn");
 
 const knoInput = document.getElementById("kno");
 const monthSelect = document.getElementById("month");
@@ -36,6 +40,7 @@ const responseJsonInput = document.getElementById("response-json");
 const detailsButton = document.getElementById("details-btn");
 const downloadButton = document.getElementById("download-btn");
 const statusElement = document.getElementById("status");
+let logoutTimer;
 
 function setStatus(text, tone) {
   statusElement.textContent = text;
@@ -166,6 +171,46 @@ function unlockApp() {
   appCard.classList.remove("hidden");
 }
 
+function clearSession() {
+  sessionStorage.removeItem(sessionKey);
+  sessionStorage.removeItem(sessionExpiryKey);
+}
+
+function showLogin() {
+  appCard.classList.add("hidden");
+  loginCard.classList.remove("hidden");
+}
+
+function scheduleAutoLogout() {
+  clearTimeout(logoutTimer);
+  const expiry = Number(sessionStorage.getItem(sessionExpiryKey));
+  const remaining = expiry - Date.now();
+
+  if (!expiry || remaining <= 0) {
+    logout(true);
+    return;
+  }
+
+  logoutTimer = setTimeout(() => logout(true), remaining);
+}
+
+function startSession() {
+  sessionStorage.setItem(sessionKey, "ok");
+  sessionStorage.setItem(sessionExpiryKey, String(Date.now() + sessionDurationMs));
+  scheduleAutoLogout();
+}
+
+function logout(isAuto = false) {
+  clearTimeout(logoutTimer);
+  clearSession();
+  showLogin();
+  statusElement.textContent = "";
+  responseJsonInput.value = "";
+  knoInput.value = "";
+  passwordInput.value = "";
+  setLoginStatus(isAuto ? "Session expired" : "Logged out", "idle");
+}
+
 async function login() {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
@@ -197,7 +242,7 @@ async function login() {
       throw new Error("Invalid");
     }
 
-    sessionStorage.setItem("bill-auth", "ok");
+    startSession();
     setLoginStatus("Success", "success");
     unlockApp();
   } catch {
@@ -207,10 +252,17 @@ async function login() {
 
 fillDateOptions();
 
-if (sessionStorage.getItem("bill-auth") === "ok") {
+if (
+  sessionStorage.getItem(sessionKey) === "ok" &&
+  Number(sessionStorage.getItem(sessionExpiryKey)) > Date.now()
+) {
   unlockApp();
+  scheduleAutoLogout();
+} else {
+  clearSession();
 }
 
 loginButton.addEventListener("click", login);
+logoutButton.addEventListener("click", () => logout(false));
 detailsButton.addEventListener("click", openDetailsPage);
 downloadButton.addEventListener("click", downloadBill);
