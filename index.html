@@ -73,24 +73,6 @@
         cursor: pointer;
       }
 
-      textarea {
-        width: 100%;
-        min-height: 180px;
-        padding: 14px;
-        border-radius: 14px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        background: rgba(255, 255, 255, 0.08);
-        color: #fff;
-        font: inherit;
-        resize: vertical;
-      }
-
-      .actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-      }
-
       #status {
         margin: 14px 0 0;
         text-align: center;
@@ -135,18 +117,7 @@
         </label>
       </div>
 
-      <label>
-        <span>Response JSON</span>
-        <textarea
-          id="response-json"
-          placeholder='[{"accno":"18350101","sdocode":"3301320","tariffcode":"4000P"}]'
-        ></textarea>
-      </label>
-
-      <div class="actions">
-        <button id="details-btn" type="button">Get Details</button>
-        <button id="download-btn" type="button">Download</button>
-      </div>
+      <button id="fetch-btn" type="button">Fetch</button>
 
       <p id="status" class="idle"></p>
     </main>
