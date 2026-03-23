@@ -5,6 +5,7 @@ const detailsApiBase =
 const downloadBaseUrl =
   "https://jdvvnl.bijliprabandh.com/jdvvnlprabhand/billPrintByAccountNoFromNcms/download";
 const defaultTariffCode = "4000P";
+const authFile = "./user.txt";
 
 const months = [
   ["01", "January"],
@@ -21,15 +22,29 @@ const months = [
   ["12", "December"]
 ];
 
+const loginCard = document.getElementById("login-card");
+const appCard = document.getElementById("app-card");
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const loginButton = document.getElementById("login-btn");
+const loginStatusElement = document.getElementById("login-status");
+
 const knoInput = document.getElementById("kno");
 const monthSelect = document.getElementById("month");
 const yearSelect = document.getElementById("year");
-const fetchButton = document.getElementById("fetch-btn");
+const responseJsonInput = document.getElementById("response-json");
+const detailsButton = document.getElementById("details-btn");
+const downloadButton = document.getElementById("download-btn");
 const statusElement = document.getElementById("status");
 
 function setStatus(text, tone) {
   statusElement.textContent = text;
   statusElement.className = tone;
+}
+
+function setLoginStatus(text, tone) {
+  loginStatusElement.textContent = text;
+  loginStatusElement.className = tone;
 }
 
 function fillDateOptions() {
@@ -118,28 +133,26 @@ function parseAccount(payload) {
   };
 }
 
-async function fetchAndDownload() {
+function openDetailsPage() {
   const kno = knoInput.value.trim();
   if (!kno) {
     setStatus("Invalid", "error");
     return;
   }
 
-  setStatus("Checking...", "idle");
+  const url = detailsApiBase + encodeURIComponent(kno);
+  window.open(url, "_blank", "noopener,noreferrer");
+  setStatus("Paste JSON and click Download", "idle");
+}
 
+function parseAccountFromTextarea() {
+  const payload = JSON.parse(responseJsonInput.value.trim());
+  return parseAccount(payload);
+}
+
+async function downloadBill() {
   try {
-    const response = await fetch(detailsApiBase + encodeURIComponent(kno), {
-      headers: {
-        Accept: "application/json, text/plain, */*"
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error("Invalid");
-    }
-
-    const payload = await response.json();
-    const account = parseAccount(payload);
+    const account = parseAccountFromTextarea();
     const billUrl = await buildBillUrl(account);
     setStatus("Valid", "success");
     window.open(billUrl, "_blank", "noopener,noreferrer");
@@ -148,5 +161,56 @@ async function fetchAndDownload() {
   }
 }
 
+function unlockApp() {
+  loginCard.classList.add("hidden");
+  appCard.classList.remove("hidden");
+}
+
+async function login() {
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
+
+  if (!username || !password) {
+    setLoginStatus("Invalid", "error");
+    return;
+  }
+
+  setLoginStatus("Checking...", "idle");
+
+  try {
+    const response = await fetch(authFile, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("Missing user file");
+    }
+
+    const content = await response.text();
+    const isValid = content
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .some((line) => {
+        const [savedUser, ...rest] = line.split(":");
+        return savedUser === username && rest.join(":") === password;
+      });
+
+    if (!isValid) {
+      throw new Error("Invalid");
+    }
+
+    sessionStorage.setItem("bill-auth", "ok");
+    setLoginStatus("Success", "success");
+    unlockApp();
+  } catch {
+    setLoginStatus("Invalid", "error");
+  }
+}
+
 fillDateOptions();
-fetchButton.addEventListener("click", fetchAndDownload);
+
+if (sessionStorage.getItem("bill-auth") === "ok") {
+  unlockApp();
+}
+
+loginButton.addEventListener("click", login);
+detailsButton.addEventListener("click", openDetailsPage);
+downloadButton.addEventListener("click", downloadBill);
